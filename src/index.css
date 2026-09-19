@@ -1,0 +1,487 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* -------------------------------------------------------------
+   Obsidian & Document Typography & Component System
+   ------------------------------------------------------------- */
+
+/* Collapsible Document Headings */
+.doc-heading {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: color 0.15s ease;
+}
+
+.doc-heading:hover {
+  color: #000000;
+}
+
+.doc-heading::before {
+  content: '▾';
+  display: inline-block;
+  margin-right: 0.45rem;
+  font-size: 0.85em;
+  color: #9CA3AF;
+  transition: transform 0.15s ease;
+  user-select: none;
+}
+
+.doc-heading.heading-collapsed::before {
+  transform: rotate(-90deg);
+}
+
+.doc-heading-1 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  border-bottom: 1px solid #E5E7EB;
+  padding-bottom: 0.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.doc-heading-2 {
+  font-size: 1.4rem;
+  font-weight: 650;
+  margin-top: 2rem;
+  margin-bottom: 0.85rem;
+  letter-spacing: -0.015em;
+}
+
+.doc-heading-3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.01em;
+}
+
+.doc-heading-4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Document Body Layout */
+.doc-body-wrapper p {
+  margin-bottom: 1.25rem;
+  line-height: 1.7;
+}
+
+.doc-body-wrapper ul,
+.doc-body-wrapper ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.75rem;
+}
+
+.doc-body-wrapper li {
+  margin-bottom: 0.4rem;
+  line-height: 1.6;
+}
+
+.doc-body-wrapper li.task-list-item {
+  list-style: none;
+  margin-left: -1.75rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.doc-body-wrapper li.task-list-item input[type="checkbox"] {
+  margin-top: 0.35rem;
+  accent-color: #111827;
+  cursor: pointer;
+}
+
+.doc-body-wrapper blockquote {
+  border-left: 3px solid #D1D5DB;
+  padding-left: 1.25rem;
+  margin: 1.5rem 0;
+  color: #4B5563;
+  font-style: italic;
+}
+
+/* Wikilinks */
+.obsidian-wikilink {
+  color: #4F46E5 !important;
+  text-decoration: none !important;
+  background: rgba(79, 70, 229, 0.08);
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+  border-bottom: 1px dashed #4F46E5;
+  font-weight: 500;
+  transition: background 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.obsidian-wikilink:hover {
+  background: rgba(79, 70, 229, 0.18);
+  text-decoration: none !important;
+}
+
+/* Obsidian Tags */
+.obsidian-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  color: #4B5563;
+  padding: 0.1rem 0.55rem;
+  border-radius: 9999px;
+  margin-right: 0.4rem;
+  margin-bottom: 0.4rem;
+  user-select: none;
+}
+
+/* Mark Highlights and Del */
+.doc-body-wrapper mark {
+  background: #FEF08A;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  color: #111827;
+}
+
+.doc-body-wrapper del {
+  color: #9CA3AF;
+}
+
+/* Tables */
+.doc-body-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  font-size: 0.875rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.doc-body-wrapper th,
+.doc-body-wrapper td {
+  border: 1px solid #E5E7EB;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.doc-body-wrapper th {
+  background: #F9FAFB;
+  font-weight: 600;
+  color: #111827;
+}
+
+.doc-body-wrapper tr:nth-child(even) {
+  background: #FDFDFD;
+}
+
+/* Code Blocks & Inline Code */
+.doc-body-wrapper pre {
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 1.1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.doc-body-wrapper code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85em;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+}
+
+.doc-body-wrapper pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+/* KaTeX Equations & Formula Alignment Fixes */
+.katex-display-block {
+  overflow-x: auto;
+  padding: 0.85rem 0;
+  margin: 1.25rem 0;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.katex-inline {
+  display: inline-block;
+  padding: 0 0.2rem;
+  line-height: 1;
+}
+
+/* Ensure MathML is hidden to prevent double/overlapping renderings */
+.katex-mathml {
+  display: none !important;
+}
+
+/* Ensure KaTeX font and element metrics work reliably with Tailwind resets */
+.katex {
+  font-size: 1.08em;
+  text-rendering: auto;
+  border-color: currentColor;
+}
+
+.katex * {
+  border-color: currentColor;
+}
+
+/* Prevent fraction line collapsing or overlapping numerator/denominator */
+.katex .mfrac .frac-line {
+  border-bottom-style: solid !important;
+  min-height: 1.2px;
+}
+
+.katex .mfrac .vlist-t {
+  border-collapse: separate !important;
+}
+
+.katex .vlist-r {
+  position: relative;
+}
+
+/* Obsidian Callouts */
+.obsidian-callout {
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  transition: all 0.15s ease;
+}
+
+.obsidian-callout-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  user-select: none;
+  cursor: pointer;
+}
+
+.callout-fold-toggle {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: #6B7280;
+  transition: transform 0.15s ease;
+}
+
+.obsidian-callout.is-folded .callout-fold-toggle {
+  transform: rotate(-90deg);
+}
+
+.obsidian-callout-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Callout Color Themes */
+.callout-note {
+  background: #EFF6FF;
+  border-left: 4px solid #3B82F6;
+}
+.callout-note .obsidian-callout-title { color: #1D4ED8; }
+
+.callout-tip {
+  background: #F0FDF4;
+  border-left: 4px solid #10B981;
+}
+.callout-tip .obsidian-callout-title { color: #047857; }
+
+.callout-warning {
+  background: #FFFBEB;
+  border-left: 4px solid #F59E0B;
+}
+.callout-warning .obsidian-callout-title { color: #B45309; }
+
+.callout-danger {
+  background: #FEF2F2;
+  border-left: 4px solid #EF4444;
+}
+.callout-danger .obsidian-callout-title { color: #B91C1C; }
+
+.callout-question {
+  background: #FAF5FF;
+  border-left: 4px solid #A855F7;
+}
+.callout-question .obsidian-callout-title { color: #7E22CE; }
+
+.callout-quote {
+  background: #F9FAFB;
+  border-left: 4px solid #6B7280;
+}
+.callout-quote .obsidian-callout-title { color: #374151; }
+
+.callout-example {
+  background: #F5F3FF;
+  border-left: 4px solid #8B5CF6;
+}
+.callout-example .obsidian-callout-title { color: #6D28D9; }
+
+.callout-summary, .callout-todo {
+  background: #F0FDFA;
+  border-left: 4px solid #14B8A6;
+}
+.callout-summary .obsidian-callout-title,
+.callout-todo .obsidian-callout-title { color: #0F766E; }
+
+/* Jump Link Target Pulse */
+@keyframes pulse-target {
+  0% {
+    background-color: #FEF08A;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.highlight-target {
+  animation: pulse-target 1.8s ease-out;
+  border-radius: 4px;
+}
+
+/* -------------------------------------------------------------
+   Dark Mode Obsidian Overrides
+   ------------------------------------------------------------- */
+.dark .doc-heading:hover {
+  color: #F9FAFB;
+}
+
+.dark .doc-heading-1 {
+  border-bottom-color: #27272A;
+}
+
+.dark .doc-body-wrapper blockquote {
+  border-left-color: #3F3F46;
+  color: #9CA3AF;
+}
+
+.dark .obsidian-wikilink {
+  color: #A5B4FC !important;
+  background: rgba(99, 102, 241, 0.16);
+  border-bottom-color: #818CF8;
+}
+
+.dark .obsidian-wikilink:hover {
+  background: rgba(99, 102, 241, 0.28);
+}
+
+.dark .obsidian-tag {
+  background: #27272A;
+  border-color: #3F3F46;
+  color: #D4D4D8;
+}
+
+.dark .doc-body-wrapper mark {
+  background: #854D0E;
+  color: #FEF08A;
+}
+
+.dark .doc-body-wrapper del {
+  color: #6B7280;
+}
+
+.dark .doc-body-wrapper table {
+  border-color: #27272A;
+}
+
+.dark .doc-body-wrapper th,
+.dark .doc-body-wrapper td {
+  border-color: #27272A;
+}
+
+.dark .doc-body-wrapper th {
+  background: #1F2024;
+  color: #F3F4F6;
+}
+
+.dark .doc-body-wrapper tr:nth-child(even) {
+  background: #16171B;
+}
+
+.dark .doc-body-wrapper pre {
+  background: #141518;
+  border-color: #27272A;
+}
+
+.dark .doc-body-wrapper code {
+  background: #27272A;
+  border-color: #3F3F46;
+  color: #E4E4E7;
+}
+
+.dark .doc-body-wrapper pre code {
+  background: transparent;
+  border: none;
+  color: inherit;
+}
+
+.dark .obsidian-callout {
+  border-color: #27272A;
+}
+
+.dark .callout-note {
+  background: rgba(30, 58, 138, 0.22);
+  border-left-color: #60A5FA;
+}
+.dark .callout-note .obsidian-callout-title { color: #93C5FD; }
+
+.dark .callout-tip {
+  background: rgba(6, 78, 59, 0.22);
+  border-left-color: #34D399;
+}
+.dark .callout-tip .obsidian-callout-title { color: #6EE7B7; }
+
+.dark .callout-warning {
+  background: rgba(120, 53, 15, 0.22);
+  border-left-color: #FBBF24;
+}
+.dark .callout-warning .obsidian-callout-title { color: #FDE68A; }
+
+.dark .callout-danger {
+  background: rgba(127, 29, 29, 0.22);
+  border-left-color: #F87171;
+}
+.dark .callout-danger .obsidian-callout-title { color: #FCA5A5; }
+
+.dark .callout-question {
+  background: rgba(88, 28, 135, 0.22);
+  border-left-color: #C084FC;
+}
+.dark .callout-question .obsidian-callout-title { color: #E9D5FF; }
+
+.dark .callout-quote {
+  background: rgba(39, 39, 42, 0.4);
+  border-left-color: #9CA3AF;
+}
+.dark .callout-quote .obsidian-callout-title { color: #E5E7EB; }
+
+.dark .callout-example {
+  background: rgba(109, 40, 217, 0.22);
+  border-left-color: #A78BFA;
+}
+.dark .callout-example .obsidian-callout-title { color: #DDD6FE; }
+
+.dark .callout-summary,
+.dark .callout-todo {
+  background: rgba(19, 78, 74, 0.22);
+  border-left-color: #2DD4BF;
+}
+.dark .callout-summary .obsidian-callout-title,
+.dark .callout-todo .obsidian-callout-title { color: #99F6E4; }
+
+.dark .katex {
+  color: #F3F4F6;
+}
+

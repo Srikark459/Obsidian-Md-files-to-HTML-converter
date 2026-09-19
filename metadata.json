@@ -1,0 +1,6 @@
+{
+  "name": "Obsidian to HTML Converter",
+  "description": "Convert Obsidian markdown notes with wikilinks, callouts, math equations, and nested headings into a standalone collapsible HTML document.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
