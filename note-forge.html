@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <title>NoteForge — Obsidian HTML Exporter</title>
+  <meta name="description" content="Convert Markdown and Obsidian notes into a navigable HTML document in your browser.">
+
+  <!-- Marked JS & KaTeX -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js" integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+
+  <style>
+    /* Design System & Variables */
+    :root {
+      --bg-color: #FFFFFF;
+      --surface: #F9FAFB;
+      --border-color: #E5E7EB;
+      --text-main: #111827;
+      --text-muted: #6B7280;
+      --text-meta: #9CA3AF;
+      --accent: #000000;
+      --accent-hover: #374151;
+      --callout-bg: #EFF6FF;
+      --callout-border: #3B82F6;
+      --callout-text: #1D4ED8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* -----------------------------------
+       LANDING PAGE STYLES
+       ----------------------------------- */
+    #landing-page { display: flex; flex-direction: column; min-height: 100vh; }
+    .container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+
+    header { display: flex; justify-content: space-between; align-items: center; padding: 2rem 0; border-bottom: 1px solid var(--border-color); }
+    .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 1.125rem; }
+
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a { text-decoration: none; color: var(--text-main); font-size: 0.875rem; font-weight: 500; }
+
+    .btn { background: var(--accent); color: #fff; border: 1px solid var(--accent); padding: 0.5rem 1.25rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: background 0.2s; }
+    .btn:hover { background: var(--accent-hover); }
+    
+    .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); }
+    .btn-outline:hover { background: var(--surface); }
+
+    .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; padding: 6rem 0; align-items: center; }
+    .hero-content { max-width: 560px; }
+    .eyebrow { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-meta); margin-bottom: 1.5rem; display: block; }
+    .hero-content h1 { font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1.5rem; font-weight: 500; }
+    .hero-content p { font-size: 1.125rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 50ch; }
+    
+    .hero-actions { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+    .meta-text { font-size: 0.875rem; color: var(--text-meta); }
+
+    .hero-graphic { display: flex; align-items: center; gap: 1.5rem; position: relative; }
+    .graphic-panel { flex: 1; border: 1px solid var(--border-color); background: var(--bg-color); border-radius: 6px; padding: 1.5rem; min-height: 280px; display: flex; flex-direction: column; gap: 1rem; }
+    .panel-header { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-meta); text-align: center; position: absolute; bottom: -2rem; width: calc(50% - 1.5rem); }
+    
+    .graphic-md { font-family: monospace; font-size: 0.875rem; color: var(--text-muted); }
+    .graphic-md span { display: block; margin-bottom: 0.75rem; }
+    
+    .graphic-html { font-size: 0.875rem; }
+    .g-h1 { font-size: 1.25rem; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem; }
+    .g-callout { background: var(--callout-bg); border-left: 3px solid var(--callout-border); padding: 0.75rem; color: var(--callout-text); margin-bottom: 1rem; border-radius: 2px; }
+    .g-math { font-style: italic; text-align: center; }
+    .arrow-icon { color: var(--text-meta); flex-shrink: 0; }
+
+    .features { border-top: 1px solid var(--border-color); padding: 4rem 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 3rem; }
+    .feature h3 { font-size: 1rem; font-weight: 500; margin: 1rem 0 0.5rem 0; }
+    .feature p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+    .feature svg { width: 24px; height: 24px; stroke: var(--text-main); fill: none; stroke-width: 1.5; }
+
+    footer { text-align: center; padding: 4rem 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-meta); border-top: 1px solid var(--border-color); margin-top: auto; }
+    footer span { display: block; width: 20px; height: 1px; background: var(--text-meta); margin: 1rem auto 0; }
+
+    /* -----------------------------------
+       APP WORKSPACE STYLES
+       ----------------------------------- */
+    #app-workspace { display: none; height: 100vh; overflow: hidden; background: var(--bg-color); }
+    .app-header { position: absolute; top: 0; left: 0; right: 0; height: 60px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; background: var(--bg-color); z-index: 100; }
+    .workspace-area { display: flex; width: 100%; height: 100vh; padding-top: 60px; }
+    
+    .toc-sidebar { width: 280px; border-right: 1px solid var(--border-color); background: var(--surface); overflow-y: auto; padding: 1.5rem; }
+    .toc-sidebar h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-meta); margin-bottom: 1rem; }
+    
+    /* Collapsible TOC Styles */
+    .toc-root, .toc-nested { list-style: none; padding-left: 0; margin: 0; }
+    .toc-nested { padding-left: 1rem; }
+    .toc-item-row { display: flex; align-items: flex-start; margin: 6px 0; }
+    .toc-toggle { 
+      width: 18px; 
+      flex-shrink: 0;
+      cursor: pointer; 
+      user-select: none; 
+      color: var(--text-meta); 
+      display: inline-block; 
+      transition: transform 0.15s ease; 
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+    .toc-toggle.collapsed { transform: rotate(-90deg); }
+    .toc-toggle.empty { visibility: hidden; }
+    .toc-link { color: var(--text-main); text-decoration: none; font-size: 0.875rem; flex: 1; line-height: 1.4; }
+    .toc-link:hover { color: var(--callout-border); }
+    .toc-nested.hidden { display: none; }
+    
+    .content-area { flex: 1; overflow-y: auto; padding: 3rem 4rem; }
+    .document-body { max-width: 760px; margin: 0 auto; padding-bottom: 6rem; }
+
+    /* Markdown Renders */
+    .document-body h1, .document-body h2, .document-body h3, .document-body h4 {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+    
+    /* Collapsible Arrow Styling for Document Body */
+    .document-body h1::before, .document-body h2::before, .document-body h3::before, .document-body h4::before {
+      content: '▾';
+      display: inline-block;
+      margin-right: 0.5rem;
+      font-size: 0.8em;
+      color: var(--text-meta);
+      transition: transform 0.15s ease;
+    }
+    .document-body .heading-collapsed::before { transform: rotate(-90deg); }
+
+    .document-body h1 { border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 2.5rem; margin-bottom: 1.5rem; font-weight: 600;}
+    .document-body h2 { margin-top: 2rem; margin-bottom: 1rem; font-weight: 600;}
+    .document-body h3, .document-body h4 { margin-top: 1.5rem; margin-bottom: 0.75rem; font-weight: 600;}
+    .document-body p { margin-bottom: 1.25rem; color: var(--text-main); }
+    .document-body pre { background: var(--surface); padding: 1rem; border-radius: 4px; overflow-x: auto; border: 1px solid var(--border-color); margin-bottom: 1.5rem;}
+    .document-body code { font-family: monospace; font-size: 0.875em; background: var(--surface); padding: 0.15rem 0.3rem; border-radius: 3px; border: 1px solid var(--border-color); }
+    .document-body pre code { background: transparent; border: none; padding: 0; font-size: 0.8125rem; }
+    .document-body a { color: var(--callout-border); text-decoration: none; }
+    
+    .document-body table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: 0.875rem; }
+    .document-body th, .document-body td { border: 1px solid var(--border-color); padding: 0.75rem 1rem; text-align: left; }
+    .document-body th { background: var(--surface); font-weight: 600; color: var(--text-main); }
+    .document-body tr:nth-child(even) { background: #FAFAFA; }
+
+    .document-body ul, .document-body ol { margin-bottom: 1.25rem; padding-left: 1.5rem; }
+    .document-body li { margin-bottom: 0.5rem; }
+    .document-body li.task-list-item { list-style: none; margin-left: -1.5rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+    .document-body li.task-list-item input[type="checkbox"] { margin-top: 0.3rem; accent-color: #000; }
+
+    .document-body blockquote { border-left: 3px solid var(--border-color); padding-left: 1.25rem; margin: 1.5rem 0; color: var(--text-muted); font-style: italic; }
+    .document-body del { color: var(--text-meta); }
+    .document-body mark { background: #FEF08A; padding: 0.1em 0.3em; border-radius: 2px; }
+
+    /* Obsidian Callouts */
+    .callout { border: 1px solid var(--border-color); border-left: 3px solid var(--callout-border); padding: 1rem 1.25rem; margin: 1.5rem 0; background: var(--callout-bg); border-radius: 4px; font-style: normal; }
+    .callout-title { font-weight: 600; margin-bottom: 0.5rem; color: var(--callout-text); font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; text-transform: capitalize; }
+    .callout p:last-child { margin-bottom: 0; }
+    
+    .callout-warning, .callout-caution { border-left-color: #F59E0B; background: #FFFBEB; }
+    .callout-warning .callout-title { color: #B45309; }
+    .callout-error, .callout-danger { border-left-color: #EF4444; background: #FEF2F2; }
+    .callout-error .callout-title { color: #B91C1C; }
+    .callout-success, .callout-tip { border-left-color: #10B981; background: #ECFDF5; }
+    .callout-success .callout-title { color: #047857; }
+
+    #fileInput { display: none; }
+  </style>
+</head>
+<body>
+
+  <input type="file" id="fileInput" multiple accept=".md,.text,.txt">
+
+  <!-- ==========================================
+       STATE 1: LANDING PAGE 
+       ========================================== -->
+  <div id="landing-page">
+    <div class="container">
+      <header>
+        <div class="logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l10 6v8l-10 6-10-6V8z"/></svg>
+          Obsidian &rarr; HTML
+        </div>
+        <nav class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How It Works</a>
+          <button class="btn" onclick="document.getElementById('fileInput').click()">Start</button>
+        </nav>
+      </header>
+
+      <main class="hero" id="how-it-works">
+        <div class="hero-content">
+          <span class="eyebrow">Your Notes. One Beautiful Document.</span>
+          <h1>From Obsidian to a Single, Stunning HTML</h1>
+          <p>Convert your Obsidian notes — with links, callouts, tables, collapsible navigation, LaTeX and more — into one clean HTML document.</p>
+          
+          <div class="hero-actions">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              Select Files
+            </button>
+            <button class="btn-outline btn" onclick="loadExample()">View Example</button>
+          </div>
+          <span class="meta-text">Your files are processed locally in this browser.</span>
+        </div>
+
+        <div class="hero-graphic">
+          <div class="graphic-panel">
+            <div class="graphic-md">
+              <span># My Note</span>
+              <span>[[Another Note]]</span>
+              <span>> [!NOTE]<br>&nbsp;&nbsp;Useful idea.</span>
+              <span>$E = mc^2$</span>
+              <span>#productivity</span>
+            </div>
+          </div>
+          <div class="panel-header" style="left: 0;">Obsidian Markdown</div>
+          <svg class="arrow-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <div class="graphic-panel">
+            <div class="graphic-html">
+              <div class="g-h1">My Note</div>
+              <div style="height: 4px; width: 60%; background: var(--border-color); margin-bottom: 6px;"></div>
+              <div style="height: 4px; width: 80%; background: var(--surface); margin-bottom: 24px;"></div>
+              <div class="g-callout">
+                <strong style="display:block; margin-bottom:4px; font-size:0.75rem;">Note</strong>
+                Useful idea.
+              </div>
+              <div class="g-math">E = mc²</div>
+            </div>
+          </div>
+          <div class="panel-header" style="right: 0;">Beautiful HTML</div>
+        </div>
+      </main>
+
+      <section class="features" id="features">
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <h3>Obsidian Syntax</h3>
+          <p>Links, embeds, callouts, tags, footnotes — all supported.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><path d="M18 7V4H6v3M6 20h12v-3M12 12l6-8M12 12L6 20"/></svg>
+          <h3>LaTeX Rendering</h3>
+          <p>Beautiful math with KaTeX, inline or block.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <h3>Automatic TOC</h3>
+          <p>Nested, collapsible sidebar navigation.</p>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          <h3>Portable Export</h3>
+          <p>Export a polished, navigable HTML document in one click.</p>
+        </div>
+      </section>
+
+      <footer>Your Knowledge, Further<span></span></footer>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       STATE 2: APP WORKSPACE 
+       ========================================== -->
+  <div id="app-workspace">
+    <div class="app-header">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l10 6v8l-10 6-10-6V8z"/></svg>
+        Converter Workspace
+      </div>
+      
+      <div style="display: flex; gap: 1rem;">
+        <button class="btn btn-outline" onclick="goHome()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          Home
+        </button>
+        <button class="btn" onclick="downloadHTML()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export Standalone HTML
+        </button>
+      </div>
+    </div>
+    
+    <div class="workspace-area">
+      <div class="toc-sidebar">
+        <h3>Table of Contents</h3>
+        <div id="tocOutput"></div>
+      </div>
+      <div class="content-area">
+        <div class="document-body" id="documentOutput"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let loadedFiles = [];
+    let mathStash = [];
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>'"]/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      })[character]);
+    }
+
+    marked.setOptions({ gfm: true, breaks: true });
+
+    function goHome() {
+      document.getElementById('app-workspace').style.display = 'none';
+      document.getElementById('landing-page').style.display = 'flex';
+      document.getElementById('fileInput').value = ''; 
+    }
+
+    document.getElementById('fileInput').addEventListener('change', async function(e) {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      if (files.length > 50) {
+        alert('Please select no more than 50 files at once.');
+        e.target.value = '';
+        return;
+      }
+      if (files.some(file => file.size > 10 * 1024 * 1024)) {
+        alert('Each file must be 10 MB or smaller.');
+        e.target.value = '';
+        return;
+      }
+
+      document.getElementById('landing-page').style.display = 'none';
+      document.getElementById('app-workspace').style.display = 'block';
+      files.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true}));
+
+      const readPromises = files.map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            resolve({ name: file.name.replace(/\.[^/.]+$/, ""), content: evt.target.result });
+          };
+          reader.readAsText(file);
+        });
+      });
+
+      loadedFiles = await Promise.all(readPromises);
+      processAndRender();
+    });
+
+    function preprocessObsidian(mdText) {
+      mdText = mdText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      // 0. Remove YAML Frontmatter
+      mdText = mdText.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '');
+
+      // 1. Remove Backlinks Section (Strips Header and ALL content beneath it)
+      mdText = mdText.replace(/(?:\n|^)#+\s+Backlinks\s*(?:\n|$)[\s\S]*$/i, '');
+      mdText = mdText.replace(/\n{3,}/g, '\n\n');
+
+      // 2. Protect LaTeX Equations
+      mdText = mdText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+        mathStash.push(match);
+        return `%%%MATH_${mathStash.length - 1}%%%`;
+      });
+      mdText = mdText.replace(/\$((?:\\.|[^$\n])*?)\$/g, (match) => {
+        mathStash.push(match);
+        return `%%%MATH_${mathStash.length - 1}%%%`;
+      });
+
+      // 3. Wikilinks
+      mdText = mdText.replace(/\[\[(.*?)(?:\|(.*?))?\]\]/g, (match, p1, p2) => {
+        const title = p2 || p1;
+        const target = p1.toLowerCase().replace(/[^\w]+/g, '-');
+        return `[${title}](#file-${target})`;
+      });
+
+      // 4. Strikethrough & Highlights
+      return mdText;
+    }
+
+    // Interactive Collapsible Headings Logic for Document Body
+    function setupCollapsibleHeadings(container) {
+      const headings = container.querySelectorAll('h1, h2, h3, h4');
+      headings.forEach(heading => {
+        heading.addEventListener('click', function(e) {
+          if (e.target.tagName === 'A') return;
+
+          const level = parseInt(this.tagName.replace('H', ''), 10);
+          this.classList.toggle('heading-collapsed');
+
+          let nextEl = this.nextElementSibling;
+          while (nextEl) {
+            if (/^H[1-4]$/.test(nextEl.tagName)) {
+              const nextLevel = parseInt(nextEl.tagName.replace('H', ''), 10);
+              if (nextLevel <= level) break;
+            }
+            
+            if (this.classList.contains('heading-collapsed')) {
+              nextEl.style.display = 'none';
+            } else {
+              nextEl.style.display = '';
+              if (nextEl.classList.contains('heading-collapsed')) {
+                const subLevel = parseInt(nextEl.tagName.replace('H', ''), 10);
+                let skipEl = nextEl.nextElementSibling;
+                while (skipEl) {
+                  if (/^H[1-4]$/.test(skipEl.tagName)) {
+                    const l = parseInt(skipEl.tagName.replace('H', ''), 10);
+                    if (l <= subLevel) break;
+                  }
+                  skipEl = skipEl.nextElementSibling;
+                }
+                nextEl = skipEl;
+                continue;
+              }
+            }
+            nextEl = nextEl.nextElementSibling;
+          }
+        });
+      });
+    }
+
+    function processAndRender() {
+      let combinedHTML = '';
+      let tocHTML = '<ul class="toc-root">';
+      mathStash = []; 
+
+      loadedFiles.forEach((file) => {
+        const fileId = `file-${file.name.toLowerCase().replace(/[^\w]+/g, '-')}`;
+        
+        const processedMd = preprocessObsidian(file.content);
+        let rawHTML = marked.parse(processedMd);
+        rawHTML = rawHTML.replace(/==([\s\S]*?)==/g, '<mark>$1</mark>');
+
+        // RESTORE PROTECTED MATH EQUATIONS HERE
+        rawHTML = rawHTML.replace(/%%%MATH_(\d+)%%%/g, (match, index) => {
+          return mathStash[index];
+        });
+
+        combinedHTML += `<section id="${fileId}">`;
+        combinedHTML += `<h1 style="margin-top: 0;">${escapeHTML(file.name)}</h1>`;
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = rawHTML;
+
+        // Marked output is placed in the DOM only after raw HTML is escaped.
+        // Apply a final allow-list to URLs and omit remote images: a note opened
+        // locally should not execute protocol handlers or quietly contact trackers.
+        tempDiv.querySelectorAll('a').forEach(anchor => {
+          const href = (anchor.getAttribute('href') || '').trim();
+          if (href.startsWith('#')) return;
+          try {
+            const protocol = new URL(href, window.location.href).protocol;
+            if (!['http:', 'https:', 'mailto:'].includes(protocol)) anchor.removeAttribute('href');
+          } catch {
+            anchor.removeAttribute('href');
+          }
+        });
+        tempDiv.querySelectorAll('img, iframe, object, embed, svg').forEach(element => element.remove());
+
+        // Auto-generate TOC IDs and Build Nested TOC Tree
+        const headings = tempDiv.querySelectorAll('h1, h2, h3, h4');
+        
+        let fileNode = { level: 0, id: fileId, title: `<strong>${escapeHTML(file.name)}</strong>`, children: [] };
+        let stack = [fileNode];
+
+        headings.forEach((h, hIdx) => {
+          const headingId = `${fileId}-h-${hIdx}`;
+          h.setAttribute('id', headingId);
+          
+          const level = parseInt(h.tagName.charAt(1), 10);
+          const node = { level: level, id: headingId, title: h.innerText, children: [] };
+          
+          // Pop stack until we find a parent with a lower level
+          while (stack.length > 0 && stack[stack.length - 1].level >= level) {
+            stack.pop();
+          }
+          
+          if (stack.length > 0) { stack[stack.length - 1].children.push(node); }
+          stack.push(node);
+        });
+
+        // Recursive render function for Collapsible TOC Subtopics
+        function renderTOCNode(node) {
+          const hasChildren = node.children.length > 0;
+          const fontStyle = node.level > 0 ? 'font-size: 0.8rem; color: var(--text-muted);' : '';
+          
+          let html = `<li>
+            <div class="toc-item-row">
+              <span class="toc-toggle ${!hasChildren ? 'empty' : ''}" onclick="this.parentElement.nextElementSibling.classList.toggle('hidden'); this.classList.toggle('collapsed');">▾</span>
+              <a class="toc-link" href="#${node.id}" style="${fontStyle}">${node.title}</a>
+            </div>`;
+            
+          if (hasChildren) {
+            html += `<ul class="toc-nested">`;
+            node.children.forEach(child => { html += renderTOCNode(child); });
+            html += `</ul>`;
+          }
+          html += `</li>`;
+          return html;
+        }
+
+        tocHTML += renderTOCNode(fileNode);
+
+        // Fix Task List Checkboxes
+        const listItems = tempDiv.querySelectorAll('li');
+        listItems.forEach(li => {
+          if (li.querySelector('input[type="checkbox"]')) {
+            li.classList.add('task-list-item');
+          }
+        });
+
+        // Safe Callout Conversion
+        const blockquotes = tempDiv.querySelectorAll('blockquote');
+        blockquotes.forEach(bq => {
+          const firstP = bq.firstElementChild;
+          if (firstP && firstP.tagName === 'P' && firstP.innerHTML.trim().startsWith('[!')) {
+            const htmlContent = firstP.innerHTML.trim();
+            const match = htmlContent.match(/^\[!(.*?)\](.*?)(?:<br>|\n|$)([\s\S]*)/);
+            
+            if (match) {
+              const type = match[1].toLowerCase().trim();
+              const title = match[2].trim() || type;
+              const remainingText = match[3].trim();
+              
+              const callout = document.createElement('div');
+              callout.className = `callout callout-${type}`;
+              
+              const titleEl = document.createElement('div');
+              titleEl.className = 'callout-title';
+              titleEl.innerHTML = title; 
+              callout.appendChild(titleEl);
+              
+              if (remainingText) {
+                firstP.innerHTML = remainingText;
+              } else {
+                firstP.remove();
+              }
+              
+              while (bq.firstChild) { callout.appendChild(bq.firstChild); }
+              bq.parentNode.replaceChild(callout, bq);
+            }
+          }
+        });
+
+        combinedHTML += tempDiv.innerHTML + `</section><hr style="margin: 4rem 0; border: 0; border-top: 1px solid var(--border-color);">`;
+      });
+
+      tocHTML += '</ul>';
+
+      document.getElementById('tocOutput').innerHTML = tocHTML;
+      const documentOutput = document.getElementById('documentOutput');
+      documentOutput.innerHTML = combinedHTML;
+
+      // Attach Collapsible Behavior to the Main Document
+      setupCollapsibleHeadings(documentOutput);
+
+      // Render Math flawlessly with KaTeX
+      renderMathInElement(documentOutput, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+      });
+    }
+
+    function loadExample() {
+      loadedFiles = [
+        { name: 'Example note', content: '# Welcome to NoteForge\n\n> [!NOTE] Everything is processed locally in your browser.\n\n## Features\n\n- [x] Obsidian-style callouts\n- [x] Tables and checklists\n- [x] Wikilinks such as [[Second note]]\n\n==Highlight important ideas== and use $E = mc^2$.\n\n| Export | Result |\n| --- | --- |\n| HTML | Shareable document |' },
+        { name: 'Second note', content: '# Linked note\n\nThis page demonstrates a working [[Example note|cross-note link]].' }
+      ];
+      document.getElementById('landing-page').style.display = 'none';
+      document.getElementById('app-workspace').style.display = 'block';
+      processAndRender();
+    }
+
+    function downloadHTML() {
+      const bodyContent = document.getElementById('documentOutput').innerHTML;
+      const tocContent = document.getElementById('tocOutput').innerHTML;
+      const inlineStyles = document.querySelector('style').innerHTML;
+
+      const fullHTMLDocument = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <title>Exported Document</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+  <style>
+    ${inlineStyles}
+    body { background: var(--bg-color); }
+    #landing-page, .app-header { display: none !important; }
+    #app-workspace { display: block !important; height: 100vh; }
+    .workspace-area { padding-top: 0; }
+  </style>
+</head>
+<body>
+  <div id="app-workspace">
+    <div class="workspace-area">
+      <div class="toc-sidebar">
+        <h3>Table of Contents</h3>
+        ${tocContent}
+      </div>
+      <div class="content-area">
+        <div class="document-body" id="exportedDoc">
+          ${bodyContent}
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Embed Document Heading Collapsible behavior into Standalone File
+    (${setupCollapsibleHeadings.toString()})(document.getElementById('exportedDoc'));
+  <\/script>
+</body>
+</html>`;
+
+      const blob = new Blob([fullHTMLDocument], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'obsidian_export.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
+
