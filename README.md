@@ -19,7 +19,7 @@ It is intentionally simple: download one HTML file, open it in a modern browser,
 ## Quick start
 
 1. Download or clone this repository.
-2. Open `obsidian-markdown-to-html.html` in a current desktop browser.
+2. Open `note-forge.html` in a current desktop browser.
 3. Choose one or more Markdown files, or click **View Example** first.
 4. Review the rendered document.
 5. Click **Export Standalone HTML** to download the result.
@@ -94,7 +94,7 @@ The converter itself loads its Markdown and math libraries from jsDelivr, so an 
 
 ```text
 .
-├── obsidian-markdown-to-html.html  # The complete application
+├── note-forge.html                 # The complete application
 └── README.md                       # This guide
 ```
 
@@ -111,5 +111,5 @@ Before submitting a change, verify at least the following:
 
 ## License
 
-Add your preferred license before publishing this project. The MIT License is a common choice for a small open-source browser tool.
+This project is released under the [MIT License](LICENSE).
 
